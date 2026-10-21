@@ -1,0 +1,99 @@
+/* LinkLens — Learn Mode: lessons and quiz */
+.lessons { display: grid; gap: 12px; }
+
+.lesson {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.lesson[open] { border-color: color-mix(in srgb, var(--accent) 50%, transparent); }
+.lesson summary {
+  list-style: none;
+  cursor: pointer;
+  display: grid;
+  gap: 4px;
+  padding: 18px 56px 18px 22px;
+  position: relative;
+}
+.lesson summary::-webkit-details-marker { display: none; }
+.lesson summary::after {
+  content: '+';
+  position: absolute;
+  right: 22px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  transition: transform 0.25s;
+}
+.lesson[open] summary::after { content: '\2212'; transform: translateY(-50%) rotate(180deg); }
+.lesson-title { font-family: var(--font-display); font-size: 1.15rem; font-weight: 600; }
+.lesson-sum { color: var(--muted); font-size: 0.94rem; }
+.lesson-body { padding: 0 22px 22px; display: grid; gap: 14px; }
+.lesson-example {
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  color: var(--seg-domain);
+  font-size: 0.88rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.lesson-body ul { padding-left: 20px; display: grid; gap: 8px; color: var(--muted); }
+
+.quiz { padding: 28px; }
+.quiz-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.quiz-progress { height: 6px; border-radius: 999px; background: var(--surface-2); margin: 12px 0 22px; overflow: hidden; }
+.quiz-progress span { display: block; height: 100%; background: var(--accent); transition: width 0.3s; }
+.quiz-q { font-size: 1.35rem; font-weight: 600; margin-bottom: 18px; line-height: 1.3; }
+.quiz-options { display: grid; gap: 10px; }
+.quiz-option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  width: 100%;
+  background: var(--bg-2);
+  border: 1.5px solid var(--line-strong);
+  border-radius: 12px;
+  padding: 13px 16px;
+  color: var(--text);
+  transition: border-color 0.2s, background 0.2s, transform 0.15s;
+  overflow-wrap: anywhere;
+}
+.quiz-option:hover:not(:disabled) { border-color: var(--accent); transform: translateX(3px); }
+.quiz-option:disabled { cursor: default; color: var(--text); }
+.opt-letter {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--surface-2);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+.quiz-option.is-correct { border-color: var(--low); background: var(--low-bg); }
+.quiz-option.is-correct .opt-letter { background: var(--low); color: var(--bg); }
+.quiz-option.is-wrong { border-color: var(--very-high); background: var(--very-high-bg); }
+.quiz-option.is-wrong .opt-letter { background: var(--very-high); color: var(--bg); }
+
+.quiz-feedback { margin-top: 16px; padding: 0; color: var(--muted); }
+.quiz-feedback.ok, .quiz-feedback.bad { padding: 14px 16px; border-radius: 12px; color: var(--text); }
+.quiz-feedback.ok { background: var(--low-bg); border: 1px solid color-mix(in srgb, var(--low) 40%, transparent); }
+.quiz-feedback.bad { background: var(--very-high-bg); border: 1px solid color-mix(in srgb, var(--very-high) 40%, transparent); }
+.quiz > .btn { margin-top: 18px; }
+.quiz-score { font-family: var(--font-display); font-size: 3.4rem; font-weight: 700; margin: 8px 0; color: var(--accent);  }
