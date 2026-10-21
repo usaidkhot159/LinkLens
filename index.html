@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LinkLens — Understand a link before you click</title>
+  <meta name="description" content="Paste a link and get a readable, explained report on its warning signs, with a transparent 0 to 100 score. LinkLens never opens the link.">
+  <meta name="theme-color" content="#f6f3ee">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/report.css">
+  <link rel="stylesheet" href="css/learn.css">
+  <script>
+    /* Apply the saved or system theme before first paint to avoid a flash. */
+    (function () {
+      try {
+        var saved = JSON.parse(localStorage.getItem('linklens.settings.v1') || '{}').theme;
+        var theme = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (e) { /* keep default */ }
+    })();
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="container header-row">
+      <a class="brand" href="#/analyze" aria-label="LinkLens home">
+        <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+          <defs>
+            <linearGradient id="bm" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#2f6f6a"/>
+              <stop offset="1" stop-color="#a67c3d"/>
+            </linearGradient>
+          </defs>
+          <circle cx="17" cy="17" r="11" fill="none" stroke="url(#bm)" stroke-width="3.5"/>
+          <path d="M25.5 25.5 L35 35" stroke="url(#bm)" stroke-width="4" stroke-linecap="round"/>
+          <path d="M12 17.5 h10 M18 13 l4.5 4.5 -4.5 4.5" fill="none" stroke="url(#bm)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="brand-name">Link<span>Lens</span></span>
+      </a>
+
+      <nav class="tabs" role="tablist" aria-label="Sections">
+        <button class="tab" role="tab" data-view="analyze" aria-selected="true">Analyze</button>
+        <button class="tab" role="tab" data-view="history" aria-selected="false">History <span class="badge" id="history-count" hidden>0</span></button>
+        <button class="tab" role="tab" data-view="learn" aria-selected="false">Learn</button>
+        <button class="tab" role="tab" data-view="about" aria-selected="false">How scoring works</button>
+      </nav>
+
+      <button class="icon-btn" id="theme-toggle" type="button" aria-label="Switch color theme" title="Switch color theme">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main id="main" class="container" tabindex="-1">
+
+    <!-- ANALYZE -->
+    <section id="view-analyze" class="view" aria-labelledby="analyze-title">
+      <div class="hero">
+        <p class="eyebrow">Phishing link analyzer</p>
+        <h1 id="analyze-title">Understand a link <em>before</em> you click it.</h1>
+        <p class="lead">Paste a web address and LinkLens explains every warning sign it finds, with a score you can check line by line. It never opens the link.</p>
+      </div>
+
+      <form id="analyze-form" class="analyzer" novalidate>
+        <label for="url-input" class="sr-only">Link to analyze</label>
+        <div class="input-row">
+          <input id="url-input" class="url-input" type="text" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false"
+                 placeholder="https://secure-account.example-login.com/verify" aria-describedby="input-error input-hint">
+          <button id="analyze-btn" class="btn btn-primary btn-lg" type="submit">Analyze URL</button>
+        </div>
+        <p id="input-error" class="input-error" role="alert"></p>
+        <p id="input-hint" class="hint">Tip: paste the link as text. Do not open it first.</p>
+
+        <div class="options">
+          <label class="switch"><input type="checkbox" id="opt-save" checked><span class="switch-ui"></span><span>Save scans to local history</span></label>
+          <label class="switch"><input type="checkbox" id="opt-rep"><span class="switch-ui"></span><span>Also ask my LinkLens server for a reputation check</span></label>
+        </div>
+        <p id="rep-note" class="rep-note" hidden>When this is on, the full link is sent to your own LinkLens server, which forwards it to Google Safe Browsing. Leave it off for private links. It needs the optional server from the README.</p>
+
+        <div class="samples">
+          <span class="samples-label">Try an example:</span>
+          <div id="sample-list" class="sample-list"></div>
+        </div>
+      </form>
+
+      <div id="report-root" aria-live="polite"></div>
+    </section>
+
+    <!-- HISTORY -->
+    <section id="view-history" class="view" aria-labelledby="history-title" hidden>
+      <div class="view-head">
+        <div>
+          <h2 id="history-title" class="view-title">Scan history</h2>
+          <p class="lead small">Saved only in this browser. Select two scans to compare them, or delete anything you do not want to keep.</p>
+        </div>
+        <div class="view-actions">
+          <button id="compare-btn" class="btn btn-primary" type="button" disabled>Compare selected</button>
+          <button id="clear-history" class="btn btn-danger" type="button">Delete all</button>
+        </div>
+      </div>
+      <div id="history-root"></div>
+      <div id="compare-root"></div>
+    </section>
+
+    <!-- LEARN -->
+    <section id="view-learn" class="view" aria-labelledby="learn-title" hidden>
+      <div class="view-head">
+        <div>
+          <h2 id="learn-title" class="view-title">Learn mode</h2>
+          <p class="lead small">Short, practical explanations of how deceptive links work, plus a quiz.</p>
+        </div>
+      </div>
+      <div id="learn-root"></div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="view-about" class="view" aria-labelledby="about-title" hidden>
+      <div class="view-head">
+        <div>
+          <h2 id="about-title" class="view-title">How scoring works</h2>
+          <p class="lead small">The score runs from 0 to 100. Each indicator below adds a fixed number of points when it applies, and the total is capped at 100.</p>
+        </div>
+      </div>
+      <div id="about-root"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-row">
+      <p>LinkLens v<span id="app-version"></span> &middot; Scores are estimates, not guarantees. Warning signs are not proof of malicious activity.</p>
+      <p>Your links are analyzed in this browser and are never opened.</p>
+    </div>
+  </footer>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/confusables.js"></script>
+  <script src="js/parser.js"></script>
+  <script src="js/rules.js"></script>
+  <script src="js/scoring.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/learn.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
